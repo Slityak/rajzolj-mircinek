@@ -34,6 +34,8 @@ html, body {
   color: var(--c-ink);
   font-family: $font-display;
   -webkit-font-smoothing: antialiased;
+  // No blue tap flash on Android when tapping the cat or other clickable areas.
+  -webkit-tap-highlight-color: transparent;
 }
 
 h1, h2, p { margin: 0; }

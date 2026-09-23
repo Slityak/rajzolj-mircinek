@@ -56,16 +56,18 @@ function onNext() {
       :pct="game.view.value.guessPct"
       :correct="game.view.value.guessCorrect"
     />
-    <DrawingBoard
-      ref="board"
-      class="game__board"
-      :disabled="!game.view.value.canDraw"
-      :dimmed="!!overlay"
-      @change="game.setStrokes"
-      @stroke-end="game.strokeEnded"
-    >
-      <RoundOverlay v-if="overlay" v-bind="overlay" @action="onNext" />
-    </DrawingBoard>
+    <div class="game__stage">
+      <DrawingBoard
+        ref="board"
+        class="game__board"
+        :disabled="!game.view.value.canDraw"
+        :dimmed="!!overlay"
+        @change="game.setStrokes"
+        @stroke-end="game.strokeEnded"
+      >
+        <RoundOverlay v-if="overlay" v-bind="overlay" @action="onNext" />
+      </DrawingBoard>
+    </div>
     <div class="game__actions">
       <BaseButton variant="secondary" @click="onClear">{{ t.clear }}</BaseButton>
       <BaseButton variant="secondary" @click="game.giveUp">{{ t.giveUp }}</BaseButton>
@@ -103,12 +105,12 @@ function onNext() {
   &__cat { grid-area: cat; height: 260px; }
   &__bubble { grid-area: bubble; margin-top: 6px; }
   &__meter { grid-area: meter; margin-top: space(3); }
-  &__board { grid-area: board; }
+  &__stage { grid-area: board; }
   &__actions { grid-area: actions; display: flex; justify-content: space-between; gap: space(3); }
 
   // Mobile: single column, small cat next to the bubble, buttons at thumb height.
   @include mobile {
-    min-height: 100dvh;
+    min-height: 0; // shrink to the shell's fixed height instead of growing with the content
     padding: 0;
     grid-template-columns: 128px minmax(0, 1fr);
     grid-template-areas:
@@ -117,10 +119,10 @@ function onNext() {
       'cat     bubble'
       'meter   meter'
       'board   board'
-      '.       .'
       'actions actions';
     // Fixed cat/bubble row: bubble text of any length never pushes the board around.
-    grid-template-rows: auto auto 136px auto auto 1fr auto;
+    // The board row takes whatever height is left, so the page never outgrows the screen.
+    grid-template-rows: auto auto 136px auto minmax(0, 1fr) auto;
     column-gap: space(2);
     row-gap: space(3);
     align-items: center;
@@ -129,6 +131,15 @@ function onNext() {
     &__cat { height: 136px; }
     &__bubble { align-self: center; max-height: 136px; overflow: hidden; }
     &__actions { display: grid; grid-template-columns: 1fr 1fr; }
+    // The board stays square: as wide as the column, or as tall as the leftover space if that's less.
+    &__stage {
+      align-self: stretch;
+      container-type: size;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    &__board { width: max(180px, min(100cqw, 100cqh)); flex: none; }
   }
 }
 </style>

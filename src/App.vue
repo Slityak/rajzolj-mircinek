@@ -41,7 +41,9 @@ const screens = { intro: IntroScreen, game: GameScreen, final: FinalScreen } as 
     &__device {
       width: 100%;
       max-width: $mobile-max;
-      min-height: 100dvh;
+      // Fixed height so the game screen can fit its board into it; taller screens scroll inside.
+      height: 100dvh;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       background: var(--c-bg);

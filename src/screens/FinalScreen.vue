@@ -50,7 +50,7 @@ const game = inject(GAME_KEY)!
   &__bubble { width: 100%; max-width: 400px; margin-top: 6px; text-align: left; }
 
   @include mobile {
-    min-height: 100dvh;
+    min-height: auto; // the shell is viewport-high and flex: 1 stretches us; taller content scrolls
     padding: 0;
     justify-content: flex-start;
     gap: 14px;

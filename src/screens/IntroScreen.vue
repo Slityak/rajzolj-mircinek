@@ -47,7 +47,7 @@ const game = inject(GAME_KEY)!
 
   // Mobile: title → cat → bubble → lead → CTA at the bottom
   @include mobile {
-    min-height: 100dvh;
+    min-height: auto; // the shell is viewport-high and flex: 1 stretches us; taller content scrolls
     padding: 0;
     flex-direction: column;
     flex-wrap: nowrap;
