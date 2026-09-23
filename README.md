@@ -15,6 +15,7 @@ either accepts your drawing or she doesn't.
 - Five rounds, 20 seconds each. The faster Mirci gets it, the more points you earn.
 - Mirci asks for 10 easy-to-draw things but can guess 46, so expect a ghost, a snake or a
   cucumber (she is terrified of cucumbers).
+- Mirci guesses live while you draw (a Jev call about every half second).
 - Mirci is an animated SVG cat with 15 moods. You can pet her head or boop her nose; she gets
   grumpy if you pull her tail.
 - Every judgement comes from **[Jev](https://developers.cloudflare.com/ai/models/typesafe/jev/)**,
@@ -24,36 +25,56 @@ either accepts your drawing or she doesn't.
 
 ## How Mirci sees a drawing
 
-Jev is a text model. It answers typed questions about a piece of text, and it can't look at
-images. So the Worker describes the drawing in words (`shared/describe.ts`):
+Jev is a text model. It answers typed questions about a structured state, and it can't look at
+images. So the whole game is about **serialising a drawing for Jev**, while Jev always makes the decision.
 
-```
-3 strokes; the whole drawing is very wide.
-Main shape: large oval (wide), at the center of the drawing.
-medium triangle, right of the main shape, touching it.
-small dot, inside the main shape.
-```
+1. **Vectorise** (`shared/shapes.ts`, deterministic). Strokes that nearly touch are joined, and a
+   line that crosses itself is split into its loops. Corners come from the turning angle,
+   confirmed by the pen slowing down (the client sends pointer timestamps) and by an RDP
+   simplification. Each piece gets the simplest primitive that still fits: circle, ellipse,
+   triangle, rectangle, crescent, star, a scalloped cloud-like edge, an outline pinched near one
+   end, … Then come the relations between shapes: inside, attached to which end or side, above,
+   repeated rays.
+2. **Scene graph as Jev state** (`worker/scene.ts`). The shapes and relations go in as a
+   structured object, numbered in drawing order and described with a fixed vocabulary.
+3. **Shared vocabulary.** Every subject's criteria (`SUBJECTS.describe`) use the same words as the
+   scene. A fish is "a horizontal ellipse with a triangle attached to one end". Jev compares like
+   with like.
+4. **Two paths for realtime** (`worker/encodings.ts`):
+   - `live`: while the player draws, the scene goes to a single Jev call (~0.45 s), as soon as the
+     previous answer is back.
+   - `final`: when a stroke ends, Jev first answers ~20 yes/no visual questions about the drawing
+     (`worker/features.ts`), then decides from the scene plus those feature probabilities (~0.85 s).
 
-It classifies each stroke by geometry (corners, convex hull, fill ratio, self-crossings) and then
-relates it to the main shape: inside it, on top of it, or radiating out from it like rays. Before
-that it joins strokes that nearly touch and splits a line that crosses itself into its loops.
-This is how a fish drawn in one line becomes an oval body plus a triangular tail.
+Every call asks two questions: `guess` (a `choice` over all 46 subjects + `scribble`; blind,
+the target is not in the state) and `accept` (a `noul` that names the target). A round is won when
+the guess is the target with at least 50% confidence and `accept` is not a clear rejection
+(`isAccepted()` in `shared/judge.ts`).
 
-The Worker then asks Jev two typed questions in one call:
+### What was measured
 
-| Question | Type | Sees the target? | Drives |
-|---|---|---|---|
-| `guess` | `choice` over all 46 subjects + `scribble` | no, it guesses blind | the guess meter, Mirci's mood and lines |
-| `accept` | `noul` (yes/no probability) | yes | a veto on clearly wrong drawings |
+Real Quick, Draw! drawings with pen timestamps (`make qd-data`, raw split). Per task: 15 drawings
+of it, which should be accepted, and 8 of other things, which should be rejected. The dev split was
+used for tuning and the test split only for the final numbers. Heart and cucumber are not in
+Quick, Draw!, so they were checked on our own drawings.
 
-A round is won when the blind guess is the target with at least 50% confidence and `accept`
-isn't a clear rejection (see `isAccepted()` in `shared/judge.ts`). One judgement takes about
-0.5 s and ~1000 input tokens.
+| Serialisation given to Jev | Rounds won | False accept |
+|---|---|---|
+| ASCII-art grid | ~0% | – |
+| SVG of the fitted shapes | 3% | 0% |
+| Scanline silhouette (bands, holes, symmetry) | 0% | 0% |
+| Geometric prose (first version) | 36% | 5% |
+| Scene graph + shared vocabulary, before tuning | 47% | 5% |
+| **Scene graph + shared vocabulary (`live`)** | **62%** | **2%** |
+| **+ Jev's own visual features (`final`)** | **64%** | **2%** |
 
-**Accuracy.** A plain ASCII-art rendering of the drawing got 2/22 right. With the verbal
-description, 26/30 test drawings are won, across two random seeds. The test set is synthetic
-doodles plus drawings traced from real play (`scripts/shapes.mjs`). Scribbles are always rejected.
-The mouse is the weakest task; it's often taken for a fish.
+The biggest lever was the shared vocabulary between the state and the criteria. Notations Jev can't
+map to the criteria (coordinates, SVG, scan bands) fail completely. The weakest task is the
+mouse: in Quick, Draw! it is often a computer mouse, and in Hungarian "egér" is ambiguous too.
+Without it, the other tasks reach 69–71%.
+
+A small sketch classifier trained on Quick, Draw! (`ml/`, `shared/sketch/`) was also tried as
+evidence for Jev. It reached 88%, but it moves the recognition out of Jev, so the game doesn't use it.
 
 ## Running it locally
 
@@ -75,7 +96,9 @@ million input tokens (output is free), so a few dollars covers a lot of games.
 | `make dev` | Vite dev server with the Worker running in workerd (HMR, real Jev) |
 | `make build` | Typecheck (app + Worker) and production build into `dist/` |
 | `make deploy` | Build and `wrangler deploy` |
-| `make eval` | Judge accuracy on the test drawings (needs `make dev` running) |
+| `make qd-data` | Download Quick, Draw! drawings into `data/` (train/dev/test splits) |
+| `make qd-eval` | Judge accuracy on real drawings; `STRATEGY=scene\|scene-features`, `SET=dev`, `VERBOSE=1` (lab mode) |
+| `make eval` | Judge accuracy on our own test drawings, incl. heart and cucumber (needs `make dev` running) |
 | `make describe` | Print the description Jev gets for each test drawing |
 | `make types` | Regenerate `worker/worker-configuration.d.ts` after editing `wrangler.jsonc` |
 | `make icons` | Render the PWA icons from `public/icons/icon.svg` |
@@ -87,7 +110,7 @@ the container runs `npm ci` whenever `package-lock.json` changes.
 ### Deploying your own copy
 
 Change `name` in `wrangler.jsonc`, then run `make deploy`. The app is served from
-`https://<name>.<your-subdomain>.workers.dev`. `/api/judge` is rate-limited to 90 requests per
+`https://<name>.<your-subdomain>.workers.dev`. `/api/judge` is rate-limited to 180 requests per
 minute per IP (`JUDGE_LIMITER`), because every call is a paid model call.
 
 ## Project layout
@@ -96,8 +119,9 @@ minute per IP (`JUDGE_LIMITER`), because every call is a paid model call.
 shared/        Code used by both the client and the Worker
   subjects.ts    Everything Mirci can guess (emoji + model-facing description), and TASK_KEYS
   judge.ts       POST /api/judge contract and the win rule
-  describe.ts    Strokes → verbal description
-worker/        Cloudflare Worker: validation, rate limit, the Jev call
+  shapes.ts      Strokes → shapes and relations (vectoriser)
+worker/        Cloudflare Worker: validation, rate limit, the Jev calls
+  scene.ts       Scene graph state; features.ts: Jev's yes/no visual questions; encodings.ts: live/final
   jev.ts         Typed Jev wrapper (answer types are inferred from the question definitions)
 src/           Vue 3 app
   cat/           Mirci: SVG parts + a requestAnimationFrame engine, moods, gestures

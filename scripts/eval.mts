@@ -2,6 +2,7 @@
 // dev server and prints what Jev made of them. Run with `make eval` while `make dev` is up.
 const URL = process.env.JUDGE_URL ?? 'http://localhost:5173/api/judge'
 const RUNS = Number(process.env.RUNS ?? 2)
+const STRATEGY = process.env.STRATEGY ?? '' // lab encoding (dev only), see worker/encodings.ts
 
 import { SHAPES, flat } from './shapes.mjs'
 import { isAccepted, type JudgeResponse } from '../shared/judge'
@@ -15,7 +16,7 @@ for (const [key, make] of Object.entries(SHAPES)) {
     const base = key.split('_')[0] // heart_round → heart
     const task = isTaskKey(base)
     const target = task ? base : 'fish'
-    const res = await fetch(URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ target, strokes: make().map(flat) }) })
+    const res = await fetch(URL, { method: 'POST', headers: { 'content-type': 'application/json', ...(STRATEGY && { 'x-judge-strategy': STRATEGY }) }, body: JSON.stringify({ target, strokes: make().map(flat) }) })
     const out = await res.json() as JudgeResponse
     if (!res.ok) { console.error(key, out); continue }
     const win = isAccepted(out, target)

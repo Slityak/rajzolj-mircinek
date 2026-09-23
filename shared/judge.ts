@@ -7,10 +7,19 @@ import type { SubjectKey, TaskKey } from './subjects'
 export const JUDGE_GRID = 256
 export const JUDGE_LIMITS = { strokes: 120, pointsPerStroke: 400, totalPoints: 4000 } as const
 
+/**
+ * live: quick judgement while the player is drawing (one Jev call, ~0.4 s).
+ * final: more careful judgement when a stroke ends (two Jev calls, ~0.8 s).
+ */
+export type JudgeMode = 'live' | 'final'
+
 export interface JudgeRequest {
   /** What Mirci asked for. Only the acceptance question sees it; the guess stays blind. */
   target: TaskKey
   strokes: number[][]
+  /** Optional per-point timestamps (ms since the first point), same shape as strokes / 2. */
+  times?: number[][]
+  mode?: JudgeMode
 }
 
 export interface JudgeResponse {

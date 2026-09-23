@@ -13,6 +13,8 @@
   // Workers AI (Jev). "remote": true → `npm run dev` alatt is a valódi Cloudflare modellt hívja.
   "ai": { "binding": "AI", "remote": true },
   // Every judge call is a paid model call: cap it per client IP.
-  "ratelimits": [{ "name": "JUDGE_LIMITER", "namespace_id": "1001", "simple": { "limit": 90, "period": 60 } }],
+  "ratelimits": [{ "name": "JUDGE_LIMITER", "namespace_id": "1001", "simple": { "limit": 180, "period": 60 } }],
+  // "1" enables lab-only request options (encoding switch for the eval harness). Set in .dev.vars only.
+  "vars": { "LAB": "0" },
   "observability": { "enabled": true }
 }

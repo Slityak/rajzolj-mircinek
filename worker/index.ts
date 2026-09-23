@@ -1,9 +1,15 @@
-import { SUBJECTS, SUBJECT_KEYS, isSubjectKey, isTaskKey, type SubjectKey } from '../shared/subjects'
+import { SCRIBBLE_DESCRIBE, SUBJECTS, SUBJECT_KEYS, isSubjectKey, isTaskKey, type SubjectKey } from '../shared/subjects'
 import { JUDGE_GRID, JUDGE_LIMITS, type JudgeError, type JudgeRequest, type JudgeResponse } from '../shared/judge'
-import { describeDoodle } from '../shared/describe'
+import { ENCODING_FOR, encode, isEncoding } from './encodings'
 import { runJev } from './jev'
 
-const SCRIBBLE = 'scribble'
+const words = (k: string) => k.replace(/_/g, ' ')
+/** Choice criteria: every subject in the shape vocabulary, plus "scribble". */
+const CRITERIA = {
+  ...Object.fromEntries(SUBJECT_KEYS.map(k => [k, `${words(k)}: ${SUBJECTS[k].describe}`])) as Record<SubjectKey, string>,
+  scribble: SCRIBBLE_DESCRIBE
+}
+
 
 export default {
   async fetch(req, env) {
@@ -17,34 +23,33 @@ export default {
 } satisfies ExportedHandler<Env>
 
 async function judge(req: Request, env: Env): Promise<Response> {
-  const ip = req.headers.get('cf-connecting-ip') ?? 'local'
-  const { success } = await env.JUDGE_LIMITER.limit({ key: ip })
-  if (!success) return fail(429, 'rate_limited', 'Too many judge requests')
+  // Lab mode (LAB=1 in .dev.vars, local only): no rate limit, encoding override and debug output
+  // for the eval harness.
+  const lab = env.LAB === '1'
+  if (!lab) {
+    const ip = req.headers.get('cf-connecting-ip') ?? 'local'
+    const { success } = await env.JUDGE_LIMITER.limit({ key: ip })
+    if (!success) return fail(429, 'rate_limited', 'Too many judge requests')
+  }
 
   const body = parseRequest(await req.json().catch(() => null))
   if (typeof body === 'string') return fail(400, 'bad_request', body)
 
-  const target = SUBJECTS[body.target].describe
-  const doodle = describeDoodle(body.strokes)
+  const asked = req.headers.get('x-judge-strategy')
+  const enc = lab && isEncoding(asked) ? asked : ENCODING_FOR[body.mode ?? 'live']
   try {
+    const state = await encode(enc, body.strokes, body.times, env.AI)
     const res = await runJev(env.AI, {
-      state: {
-        context: 'A player is drawing a quick doodle with a mouse or finger in under 20 seconds. ' +
-          'Below is a geometric description of the pen strokes on the page.',
-        doodle
-      },
+      state,
       questions: {
         guess: {
           type: 'choice',
-          instructions: 'What does this doodle most likely depict? Judge the shape generously, like a friend playing Pictionary.',
-          criteria: {
-            ...Object.fromEntries(SUBJECT_KEYS.map(k => [k, SUBJECTS[k].describe])) as Record<SubjectKey, string>,
-            [SCRIBBLE]: 'Nothing recognisable yet: random lines, a few unrelated strokes or too little ink'
-          }
+          instructions: 'Which of these does the drawing match best? Judge generously, like a friend playing Pictionary.',
+          criteria: CRITERIA
         },
         accept: {
           type: 'noul',
-          instructions: `The player was asked to draw ${target}. Would a fair, friendly judge accept this quick doodle as that?`,
+          instructions: `The player was asked to draw ${words(body.target)}: ${SUBJECTS[body.target].describe}. Would a fair, friendly judge accept this quick doodle as that?`,
           criteria: {
             true: 'The doodle recognisably shows the requested subject, even if it is rough',
             false: 'It is a scribble, unfinished, or clearly shows something else'
@@ -61,8 +66,8 @@ async function judge(req: Request, env: Env): Promise<Response> {
       accept: clamp01(accept.noul),
       model: res.model
     }
-    console.log(`[judge] target=${body.target} guess=${out.guess} conf=${out.confidence.toFixed(2)} target=${out.targetConfidence.toFixed(2)} accept=${out.accept.toFixed(2)} | ${doodle.replace(/\n/g, ' / ')}`)
-    return Response.json(out, { headers: { 'cache-control': 'no-store' } })
+    console.log(`[judge] ${enc} target=${body.target} guess=${out.guess} conf=${out.confidence.toFixed(2)} target=${out.targetConfidence.toFixed(2)} accept=${out.accept.toFixed(2)}`)
+    return Response.json(lab ? { ...out, debug: state } : out, { headers: { 'cache-control': 'no-store' } })
   } catch (err) {
     console.error('Jev call failed', err)
     return fail(502, 'model_error', 'The judge model is unavailable')
@@ -82,7 +87,15 @@ function parseRequest(raw: unknown): JudgeRequest | string {
     total += s.length / 2
   }
   if (total > JUDGE_LIMITS.totalPoints) return 'Too many points'
-  return { target, strokes: strokes as number[][] }
+  const { times } = raw as Record<string, unknown>
+  if (times !== undefined) {
+    const ok = Array.isArray(times) && times.length === strokes.length && times.every((t, i) =>
+      Array.isArray(t) && t.length === (strokes[i] as number[]).length / 2 && t.every(v => Number.isInteger(v) && v >= 0 && v <= 120000))
+    if (!ok) return 'Invalid times'
+  }
+  const { mode } = raw as Record<string, unknown>
+  if (mode !== undefined && mode !== 'live' && mode !== 'final') return 'Invalid mode'
+  return { target, strokes: strokes as number[][], times: times as number[][] | undefined, mode }
 }
 
 const clamp01 = (v: number) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0)

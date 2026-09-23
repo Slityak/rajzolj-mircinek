@@ -1,61 +1,65 @@
 /**
  * Everything Mirci can guess. Keys are stable identifiers shared by the client, the worker and the
- * i18n files; `describe` is model-facing (always English), never shown to players. Descriptions use
- * the same vocabulary as shared/describe.ts (circle, oval, capsule, spikes, rays…).
+ * i18n files; `describe` is model-facing (always English), never shown to players.
+ * Descriptions are written in the same shape vocabulary shared/shapes.ts uses to describe drawings
+ * (ellipse, triangle, attached to the end of, rays, inside …): Jev matches far better when the
+ * drawing and the candidates speak the same language (measured: 36% → 47% of rounds won).
  *
  * Only TASK_KEYS are ever asked for; the rest exist so Mirci has plenty of (wrong) things to guess.
  */
 export const SUBJECTS = {
   // Tasks
-  ball: { emoji: '⚽', describe: 'a ball: a single round circle, maybe with a few seam lines or stripes running across it inside, nothing sticking out' },
-  fish: { emoji: '🐟', describe: 'a fish: an oval or lens-shaped body lying sideways with a triangular tail fin on one end' },
-  house: { emoji: '🏠', describe: 'a house: a square or rectangle with a triangular roof on top, maybe a door or windows' },
-  sun: { emoji: '☀️', describe: 'the sun: a circle with short straight rays radiating outwards all around it' },
-  cucumber: { emoji: '🥒', describe: 'a cucumber: a long, narrow, slightly curved sausage-like shape with rounded ends' },
-  tree: { emoji: '🌳', describe: 'a tree: a vertical trunk with a round or cloud-like crown (or a triangle) on top' },
-  moon: { emoji: '🌙', describe: 'the moon: a crescent, a curved banana-like sickle shape with two pointed tips' },
-  star: { emoji: '⭐', describe: 'a star: a five-pointed star shape with sharp spikes' },
-  mouse: { emoji: '🐭', describe: 'a mouse: a small oval body with round ears, a pointy nose and a long thin tail' },
-  heart: { emoji: '❤️', describe: 'a heart: the classic heart symbol with two rounded bumps on top and a point at the bottom' },
+  ball: { emoji: '⚽', describe: 'one circle, maybe with lines, curves or small shapes inside it; nothing sticking out' },
+  fish: { emoji: '🐟', describe: 'a horizontal ellipse or pointed oval with a triangle, angle or fin attached to one end (tail), or one elongated outline pinched into a narrow waist near one end or with a V-shaped notch in one end; maybe a dot inside near the other end' },
+  house: { emoji: '🏠', describe: 'a square or rectangle with a triangle or ^ angle attached on its top side (roof); maybe small rectangles inside (door, windows)' },
+  sun: { emoji: '☀️', describe: 'a circle or ellipse with several short straight lines spread around it, pointing outward like rays' },
+  cucumber: { emoji: '🥒', describe: 'one very elongated ellipse or capsule, maybe slightly curved, maybe with dots or short lines inside' },
+  tree: { emoji: '🌳', describe: 'a round, bumpy or cloud-like shape or line on top (crown) with two roughly vertical lines or arcs, or a narrow rectangle, attached below it (trunk)' },
+  moon: { emoji: '🌙', describe: 'a crescent: a round shape with a deep bite out of one side, or a deep C-shaped arc' },
+  star: { emoji: '⭐', describe: 'a star with 5 sharp points, or a closed zigzag outline with 5 spikes' },
+  mouse: { emoji: '🐭', describe: 'an ellipse or pointed oval body with small circles attached on top (ears) and a long curved or wavy line attached to one end (tail)' },
+  heart: { emoji: '❤️', describe: 'a heart-like outline: a dip at the top center, two round bumps and a point at the bottom' },
 
   // Guess only
-  yarn: { emoji: '🧶', describe: 'a ball of yarn: a circle filled with many crossing, looping lines, maybe a loose thread' },
-  apple: { emoji: '🍎', describe: 'an apple: a round shape with a small dip on top and a short stem, maybe a leaf' },
-  egg: { emoji: '🥚', describe: 'an egg: a single upright oval, slightly narrower at the top, nothing else' },
-  balloon: { emoji: '🎈', describe: 'a balloon: an upright oval or circle with a long thin wavy string hanging below it' },
-  cloud: { emoji: '☁️', describe: 'a cloud: a wide closed shape with a bumpy, wavy outline of several round puffs' },
-  flower: { emoji: '🌸', describe: 'a flower: a small circle surrounded by round petal loops, often on a vertical stem' },
-  snake: { emoji: '🐍', describe: 'a snake: one long wavy S-shaped or zigzag line, maybe with a small head at one end' },
-  bird: { emoji: '🐦', describe: 'a bird: a round or oval body with a small pointed beak, a wing and thin legs; or a flying "v" shape' },
-  cat: { emoji: '🐱', describe: 'a cat: a round head with two triangular pointed ears on top, maybe whiskers and a tail' },
-  snail: { emoji: '🐌', describe: 'a snail: a spiral shell on top of a long low body with two small feelers' },
-  butterfly: { emoji: '🦋', describe: 'a butterfly: two pairs of loop-shaped wings on both sides of a thin vertical body' },
-  spider: { emoji: '🕷️', describe: 'a spider: a small round body with eight thin bent legs sticking out on both sides' },
-  umbrella: { emoji: '☂️', describe: 'an umbrella: a half circle dome on top of a straight vertical handle ending in a hook' },
-  glasses: { emoji: '👓', describe: 'glasses: two circles or ovals side by side, joined by a short bridge line' },
-  key: { emoji: '🔑', describe: 'a key: a small circle or loop at one end of a long straight shaft with a few teeth' },
-  cup: { emoji: '☕', describe: 'a cup: an upright rectangle or bowl shape, open at the top, with a loop handle on one side' },
-  lollipop: { emoji: '🍭', describe: 'a lollipop: a circle, often with a spiral inside, on top of a long straight stick' },
-  ice_cream: { emoji: '🍦', describe: 'an ice cream cone: a round scoop on top of a downward-pointing triangle' },
-  pizza: { emoji: '🍕', describe: 'a slice of pizza: a triangle with small circles (toppings) inside it' },
-  banana: { emoji: '🍌', describe: 'a banana: a curved crescent-like elongated shape, thicker in the middle' },
-  carrot: { emoji: '🥕', describe: 'a carrot: a long narrow triangle pointing down with a few short lines (leaves) on top' },
-  lightning: { emoji: '⚡', describe: 'a lightning bolt: a zigzag line or zigzag closed shape going from top to bottom' },
-  mountain: { emoji: '⛰️', describe: 'a mountain: one or more large wide triangles or a ^ shape standing on the ground' },
-  boat: { emoji: '⛵', describe: 'a boat: a wide half-oval or trapezoid hull with a vertical mast and a triangular sail' },
-  car: { emoji: '🚗', describe: 'a car: a wide rectangle-like body with two small circles (wheels) underneath' },
-  rainbow: { emoji: '🌈', describe: 'a rainbow: several nested arches (half circles) one inside the other' },
-  eye: { emoji: '👁️', describe: 'an eye: a wide lens or almond shape with a circle (pupil) inside' },
-  bone: { emoji: '🦴', describe: 'a bone: a long straight shaft with two round knobs at each end' },
-  leaf: { emoji: '🍃', describe: 'a leaf: a pointed oval or lens shape with a line down the middle and a short stem' },
-  ghost: { emoji: '👻', describe: 'a ghost: a tall rounded-top shape with a wavy bottom edge and two small eyes' },
-  donut: { emoji: '🍩', describe: 'a donut: a circle with a smaller circle (the hole) in its center' },
-  clock: { emoji: '🕐', describe: 'a clock: a circle with two straight hands from the center and maybe small marks' },
-  kite: { emoji: '🪁', describe: 'a kite: a diamond shape (four corners) with a long wavy tail line hanging below' },
-  planet: { emoji: '🪐', describe: 'a planet: a circle with a wide flat oval ring around it that sticks out far beyond both sides of the circle' },
-  crown: { emoji: '👑', describe: 'a crown: a wide shape with a flat bottom and three to five pointy spikes along the top' },
-  mushroom: { emoji: '🍄', describe: 'a mushroom: a wide dome cap on top of a short thick stem' }
+  yarn: { emoji: '🧶', describe: 'a circle filled with many crossing curved lines, maybe a loose wavy line attached outside' },
+  apple: { emoji: '🍎', describe: 'a round shape with a small dip on top and a short line (stem) attached on top, maybe a small leaf' },
+  egg: { emoji: '🥚', describe: 'a single upright ellipse, nothing else' },
+  balloon: { emoji: '🎈', describe: 'an upright ellipse or circle with a long thin wavy or straight line attached below it (string)' },
+  cloud: { emoji: '☁️', describe: 'a wide bumpy, cloud-like outline made of several round bulges, with nothing attached below it' },
+  flower: { emoji: '🌸', describe: 'a small circle surrounded by several round loops (petals), often with a vertical line below (stem)' },
+  snake: { emoji: '🐍', describe: 'one long wavy or zigzag line, maybe with a small head at one end' },
+  bird: { emoji: '🐦', describe: 'a round or oval body with a small triangle attached on one side (beak), maybe thin lines below (legs); or a flying V shape' },
+  cat: { emoji: '🐱', describe: 'a circle (head) with two triangles attached on top (ears), maybe lines on both sides (whiskers) and a tail' },
+  snail: { emoji: '🐌', describe: 'a spiral (shell) on top of a long low shape (body) with two short lines on top (feelers)' },
+  butterfly: { emoji: '🦋', describe: 'two pairs of loops or bumpy shapes on both sides of a thin vertical shape (wings and body)' },
+  spider: { emoji: '🕷️', describe: 'a small circle or ellipse with many thin bent lines (legs) attached on both sides' },
+  umbrella: { emoji: '☂️', describe: 'a half circle or dome on top with a vertical line attached below that ends in a hook' },
+  glasses: { emoji: '👓', describe: 'two circles or ellipses side by side, joined by a short line' },
+  key: { emoji: '🔑', describe: 'a small circle or loop attached to one end of a long straight line with small teeth' },
+  cup: { emoji: '☕', describe: 'a rectangle or bowl shape open at the top with a loop attached on one side (handle)' },
+  lollipop: { emoji: '🍭', describe: 'a circle, maybe with a spiral inside, with a long straight line attached below it (stick)' },
+  ice_cream: { emoji: '🍦', describe: 'a round scoop on top of a downward-pointing triangle (cone)' },
+  pizza: { emoji: '🍕', describe: 'a triangle with small circles or dots inside it' },
+  banana: { emoji: '🍌', describe: 'a curved crescent-like elongated shape, pointed at both ends' },
+  carrot: { emoji: '🥕', describe: 'a long narrow triangle pointing down with a few short lines attached on top (leaves)' },
+  lightning: { emoji: '⚡', describe: 'a zigzag line or zigzag closed shape going from top to bottom' },
+  mountain: { emoji: '⛰️', describe: 'one or more large triangles or ^ angles standing side by side' },
+  boat: { emoji: '⛵', describe: 'a wide half-oval or trapezoid at the bottom (hull) with a vertical line and a triangle above it (mast and sail)' },
+  car: { emoji: '🚗', describe: 'a wide rectangle-like body with two small circles below it (wheels)' },
+  rainbow: { emoji: '🌈', describe: 'several arches (arcs opening down) nested inside each other' },
+  eye: { emoji: '👁️', describe: 'a wide pointed oval (almond) with a circle inside it (pupil)' },
+  bone: { emoji: '🦴', describe: 'a long straight shape with two round knobs at each end' },
+  leaf: { emoji: '🍃', describe: 'a pointed oval with a line down the middle and a short line attached at one end (stem)' },
+  ghost: { emoji: '👻', describe: 'a tall shape with a round top and a wavy bottom edge, with two small dots or circles inside (eyes)' },
+  donut: { emoji: '🍩', describe: 'a circle with a smaller circle inside its center' },
+  clock: { emoji: '🕐', describe: 'a circle with two straight lines starting from its center (hands), maybe small marks inside' },
+  kite: { emoji: '🪁', describe: 'a diamond (four-sided shape standing on a corner) with a long wavy line attached below it' },
+  planet: { emoji: '🪐', describe: 'a circle with a wide flat ellipse (ring) around it that sticks out far beyond both sides' },
+  crown: { emoji: '👑', describe: 'a wide shape with a flat bottom and three to five sharp spikes along the top' },
+  mushroom: { emoji: '🍄', describe: 'a wide dome or half circle on top with a short thick rectangle attached below it (stem)' }
 } as const satisfies Record<string, { emoji: string; describe: string }>
+
+export const SCRIBBLE_DESCRIBE = 'nothing recognisable: random scribbles, a few unrelated lines, or too little ink'
 
 export type SubjectKey = keyof typeof SUBJECTS
 export const SUBJECT_KEYS = Object.keys(SUBJECTS) as SubjectKey[]

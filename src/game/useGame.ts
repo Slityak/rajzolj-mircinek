@@ -1,7 +1,7 @@
 import { computed, onBeforeUnmount, reactive, type InjectionKey } from 'vue'
 import type { Mood, CatGesture } from '@/cat'
 import { SUBJECTS, TASK_KEYS, type SubjectKey, type TaskKey } from '@shared/subjects'
-import { isAccepted, type JudgeResponse } from '@shared/judge'
+import { isAccepted, type JudgeMode, type JudgeResponse } from '@shared/judge'
 import { t, pick } from '@/i18n'
 import { judgeDrawing } from './judge'
 import { REACTION_MOODS, isReactionKey } from './reactions'
@@ -10,7 +10,7 @@ import type { Overlay, RoundOutcome, RoundResult, Screen, Stroke } from './types
 export interface GameOptions {
   rounds?: number
   roundSeconds?: number
-  /** Minimum gap between two judge (Jev) calls while drawing (ms) */
+  /** Minimum gap between two quick (live) judge calls while drawing, ms. A stroke end always triggers a final call. */
   evalEveryMs?: number
 }
 
@@ -50,7 +50,7 @@ const inkOf = (s: readonly Stroke[]) => s.reduce((n, st) => n + st.length, 0)
 export function useGame(opts: GameOptions = {}) {
   const ROUNDS = opts.rounds ?? 5
   const SECS = opts.roundSeconds ?? 20
-  const EVAL_MS = opts.evalEveryMs ?? 900
+  const EVAL_MS = opts.evalEveryMs ?? 350
 
   const state = reactive<GameState>({
     screen: 'intro', round: 0, time: SECS, score: 0, subjects: [], guess: null, confidence: 0,
@@ -76,6 +76,8 @@ export function useGame(opts: GameOptions = {}) {
   let pendingWin = false
   /** Amount of ink the last judge call saw; a new call is only made when it changes. */
   let judgedInk = 0
+  /** Ink amount a final (careful) judgement was requested for, and the last one it was done for. */
+  let finalWanted = 0, finalDone = 0
   let inflight: AbortController | null = null
   let roundId = 0
 
@@ -89,7 +91,7 @@ export function useGame(opts: GameOptions = {}) {
   function beginRound() {
     cancelJudge()
     roundId++
-    strokes = []; judgedInk = 0; reacted = new Set(); pendingWin = false; moodLock = 0; holdSpeech = 0; speechLock = 0; spokenGuess = null; lastRes = null; lastEval = 0; active = true
+    strokes = []; judgedInk = 0; finalWanted = 0; finalDone = 0; reacted = new Set(); pendingWin = false; moodLock = 0; holdSpeech = 0; speechLock = 0; spokenGuess = null; lastRes = null; lastEval = 0; active = true
     Object.assign(state, { time: SECS, guess: null, confidence: 0, overlay: null, mood: 'watch', speech: pick(t.value.watch) })
     t0 = performance.now()
     clearInterval(timer)
@@ -106,28 +108,32 @@ export function useGame(opts: GameOptions = {}) {
     if (moodLock && now > moodLock) moodLock = 0
     // A held line has expired but the drawing hasn't changed: let the bubble catch up with the meter.
     if (lastRes && !inflight && now > holdSpeech && state.guess !== spokenGuess) apply(lastRes, elapsed)
+    if (inflight) return
+    // Realtime loop: quick live calls while drawing, a careful final call whenever a stroke ends.
     const ink = inkOf(strokes)
-    if (ink && ink !== judgedInk && !inflight && now - lastEval > EVAL_MS) { lastEval = now; void evaluate(ink) }
+    if (finalWanted && finalWanted !== finalDone) { lastEval = now; void evaluate(ink, 'final') }
+    else if (ink && ink !== judgedInk && now - lastEval > EVAL_MS) { lastEval = now; void evaluate(ink, 'live') }
   }
 
-  async function evaluate(ink: number) {
+  async function evaluate(ink: number, mode: JudgeMode) {
     const id = roundId
     judgedInk = ink
-    inflight = new AbortController()
+    if (mode === 'final') finalDone = finalWanted
+    const ctrl = inflight = new AbortController()
     let res: JudgeResponse
     try {
-      res = await judgeDrawing(subject.value, strokes, canvasSize, inflight.signal)
+      res = await judgeDrawing(subject.value, strokes, canvasSize, mode, ctrl.signal)
     } catch (err) {
       if ((err as Error).name === 'AbortError') return
       console.warn(err)
-      judgedInk = 0 // retry on the next tick window
+      judgedInk = 0; finalDone = 0 // retry on the next tick
       if (id === roundId && active && !offlineShown) {
         offlineShown = true; holdSpeech = performance.now() + 2500
         Object.assign(state, { mood: 'confused', speech: t.value.judgeOffline })
       }
       return
     } finally {
-      if (id === roundId) inflight = null
+      if (inflight === ctrl) inflight = null
     }
     if (id !== roundId || !active) return
     offlineShown = false
@@ -191,7 +197,7 @@ export function useGame(opts: GameOptions = {}) {
   function cleared() {
     if (!active) return
     cancelJudge()
-    strokes = []; judgedInk = 0; reacted = new Set(); pendingWin = false; lastRes = null
+    strokes = []; judgedInk = 0; finalWanted = 0; finalDone = 0; reacted = new Set(); pendingWin = false; lastRes = null
     moodLock = performance.now() + 1600
     Object.assign(state, { guess: null, confidence: 0, mood: 'confused', speech: t.value.cleared })
   }
@@ -206,7 +212,11 @@ export function useGame(opts: GameOptions = {}) {
 
   function setStrokes(s: readonly Stroke[], size: number) { strokes = s; canvasSize = size }
   /** Requests an immediate judgement when a stroke is finished. */
-  function strokeEnded() { lastEval = 0 }
+  function strokeEnded() {
+    // A quick call still in flight would only delay the careful one: drop it.
+    cancelJudge()
+    finalWanted = inkOf(strokes)
+  }
 
   onBeforeUnmount(() => { clearInterval(timer); cancelJudge() })
 

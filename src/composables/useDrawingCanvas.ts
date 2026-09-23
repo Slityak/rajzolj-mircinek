@@ -55,7 +55,7 @@ export function useDrawingCanvas(opts: DrawingOptions = {}) {
 
   const pos = (e: PointerEvent): Point => {
     const r = canvas.value!.getBoundingClientRect()
-    return [e.clientX - r.left, e.clientY - r.top]
+    return [e.clientX - r.left, e.clientY - r.top, e.timeStamp]
   }
 
   function onPointerDown(e: PointerEvent) {
