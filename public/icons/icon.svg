@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Static Mirci head, built from src/cat/geometry.ts. Full-bleed so it also works as a maskable icon. -->
+  <rect width="512" height="512" fill="#EDF2FB"/>
+  <g transform="translate(256 262) scale(2.3) translate(-130 -98)" stroke="#1F2A5C" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M72 100 84 30 122 64Z" fill="#F29E3D" stroke-width="5"/>
+    <path d="M85 80 89 47 108 64Z" fill="#F4A0B5" stroke="none"/>
+    <path d="M188 100 176 30 138 64Z" fill="#F29E3D" stroke-width="5"/>
+    <path d="M175 80 171 47 152 64Z" fill="#F4A0B5" stroke="none"/>
+    <ellipse cx="130" cy="112" rx="60" ry="54" fill="#F29E3D" stroke-width="5"/>
+    <path d="M122 64l1 14m7-16v15m8-13l-1 14" stroke="#C8701F" stroke-width="4" fill="none"/>
+    <ellipse cx="107" cy="108" rx="12" ry="15" fill="#FFF4C9" stroke-width="4"/>
+    <ellipse cx="153" cy="108" rx="12" ry="15" fill="#FFF4C9" stroke-width="4"/>
+    <ellipse cx="107" cy="108" rx="6" ry="9.5" fill="#1F2A5C" stroke="none"/>
+    <ellipse cx="153" cy="108" rx="6" ry="9.5" fill="#1F2A5C" stroke="none"/>
+    <circle cx="105" cy="104" r="2.4" fill="#fff" stroke="none"/>
+    <circle cx="151" cy="104" r="2.4" fill="#fff" stroke="none"/>
+    <ellipse cx="130" cy="137" rx="24" ry="15" fill="#FFE3BF" stroke="none"/>
+    <path d="M130 134v4m-9-1q4.5 7 9 1 4.5 6 9-1" fill="none" stroke-width="3"/>
+    <path d="M124 127h12l-6 7z" fill="#F4A0B5" stroke-width="3"/>
+    <path d="M106 134 68 128M106 139l-40 1M108 144l-38 7M154 134l38-6M154 139l40 1M152 144l38 7" fill="none" stroke-width="2.5"/>
+  </g>
+</svg>

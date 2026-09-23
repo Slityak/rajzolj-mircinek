@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    image: rajzolj-mircinek-dev
+    # Single service: the default bridge is enough, no per-project network needed.
+    network_mode: bridge
+    # Cloudflare credentials, needed for Workers AI even in local dev. Only these two are passed in;
+    # `make` loads them from $CF_ENV (default ~/tools/.env), plain `docker compose` from ./.env.
+    environment:
+      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - wrangler_home:/home/node/.config/.wrangler
+    stdin_open: true
+    tty: true
+
+volumes:
+  node_modules:
+  wrangler_home:

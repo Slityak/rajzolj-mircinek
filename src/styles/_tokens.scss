@@ -1,0 +1,46 @@
+// Design tokens. SCSS values for compile time; swappable at runtime as CSS variables in main.scss.
+
+// Colors
+$ink: #1F2A5C;
+$ink-soft: #4A5588;
+$orange: #F29E3D;
+$orange-deep: #C8701F;
+$cream: #FFE3BF;
+$pink: #F4A0B5;
+$tongue: #F07A95;
+$tongue-groove: #C94E6E;
+$mouth: #8A2B3A;
+$eye-white: #FFF4C9;
+$heart: #E0567A;
+$white: #FFFFFF;
+$bg: #EDF2FB;
+$bg-outer: #D9E2F2;
+$paper: #F8FAFE;
+$paper-grid: #DCE4F3;
+$track: #D3DDF0;
+$success: #2E8B5E;
+$danger: #D9432B;
+
+// Typography
+$font-display: 'Grandstander', system-ui, sans-serif;
+$font-hand: 'Patrick Hand', cursive;
+$fw-semibold: 600;
+$fw-bold: 800;
+$fw-black: 900;
+
+// Spacing (4px base)
+$space: (1: 4px, 2: 8px, 3: 12px, 4: 16px, 5: 20px, 6: 24px, 7: 28px, 8: 32px, 10: 40px, 12: 48px);
+
+// Shapes
+$radius-pill: 999px;
+$radius-card: 16px;
+$radius-board: 14px;
+$border: 3px;
+$border-thin: 2.5px;
+$shadow-press: 0 5px 0 $ink;
+$shadow-pressed: 0 2px 0 $ink;
+
+// Breakpoints
+$bp-mobile: 640px;
+$mobile-max: 430px;
+$desktop-max: 1060px;

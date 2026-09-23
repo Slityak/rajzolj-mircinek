@@ -1,0 +1,44 @@
+@use 'tokens' as *;
+
+:root {
+  --c-ink: #{$ink};
+  --c-ink-soft: #{$ink-soft};
+  --c-orange: #{$orange};
+  --c-white: #{$white};
+  --c-bg: #{$bg};
+  --c-bg-outer: #{$bg-outer};
+  --c-paper: #{$paper};
+  --c-paper-grid: #{$paper-grid};
+  --c-track: #{$track};
+  --c-success: #{$success};
+  --c-danger: #{$danger};
+
+  // Mirci skin — recolorable from one place
+  --cat-fur: #{$orange};
+  --cat-stripe: #{$orange-deep};
+  --cat-cream: #{$cream};
+  --cat-pink: #{$pink};
+  --cat-line: #{$ink};
+  --cat-eye: #{$eye-white};
+  --cat-mouth: #{$mouth};
+  --cat-tongue: #{$tongue};
+  --cat-tongue-groove: #{$tongue-groove};
+  --cat-heart: #{$heart};
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-family: $font-display;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, p { margin: 0; }
+
+a { color: var(--c-ink); }
+a:hover { color: $orange-deep; }
+
+button { font: inherit; color: inherit; }

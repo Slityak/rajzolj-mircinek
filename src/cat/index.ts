@@ -1,0 +1,5 @@
+export { default as MirciCat } from './components/MirciCat.vue'
+export { CatEngine, PARTS } from './CatEngine'
+export { MOOD_NAMES, MOODS, BASE, type Mood, type MoodParams } from './moods'
+export { DEFAULT_CAT_WORDS, type CatWords } from './fx'
+export type { CatGesture, TouchGesture, TemperEvent } from './gestures'

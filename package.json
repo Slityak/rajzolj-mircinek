@@ -1,0 +1,35 @@
+{
+  "name": "rajzolj-mircinek",
+  "private": true,
+  "version": "0.2.0",
+  "description": "Draw it before the cat gets it: a browser/PWA drawing game judged by the Jev decision model on Cloudflare Workers AI.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Slityak/rajzolj-mircinek.git"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run typecheck && vite build",
+    "preview": "npm run build && vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json && tsc --noEmit -p worker/tsconfig.json",
+    "cf-typegen": "wrangler types worker/worker-configuration.d.ts",
+    "icons": "node scripts/icons.mjs"
+  },
+  "dependencies": {
+    "vue": "^3.5.43"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.57.3",
+    "@resvg/resvg-js": "^2.6.2",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "sass": "^1.105.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9",
+    "vite": "^8.3.0",
+    "vue-tsc": "^3.3.11",
+    "wrangler": "^4.136.3"
+  }
+}
