@@ -44,5 +44,10 @@ import { LOCALE_LIST, locale, localeName, setLocale, t } from '@/i18n'
     &:focus-visible { outline: 3px solid var(--c-orange); outline-offset: 2px; }
     &.is-active { background: var(--c-orange); }
   }
+
+  // Compact on phones, where it sits beside the title.
+  @include mobile {
+    &__opt { min-width: 38px; min-height: 28px; padding: 0 space(2); font-size: 13px; }
+  }
 }
 </style>

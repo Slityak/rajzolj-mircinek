@@ -59,12 +59,24 @@ const game = inject(GAME_KEY)!
     gap: 14px;
 
     &__copy, &__cat { display: contents; }
-    &__lang { position: static; order: 0; align-self: flex-end; }
+    // Beside the short first title line, so it doesn't cost a row.
+    &__lang { top: -8px; right: 0; z-index: 1; }
     :deep(.title) { order: 1; }
-    &__mirci { order: 2; width: 100%; height: 280px; }
+    // Mirci takes whatever height is left, so the CTA always fits on screen.
+    &__mirci { order: 2; width: 100%; height: auto; flex: 1 1 0; min-height: 110px; max-height: 280px; }
     &__bubble { order: 3; width: 100%; }
     &__lead { order: 4; max-width: none; font-size: 16px; line-height: 1.45; }
     &__cta { order: 5; width: 100%; margin-top: auto; }
+  }
+
+  // Short phones: a smaller title leaves more room for Mirci.
+  @media (max-width: $bp-mobile) and (max-height: 700px) {
+    :deep(.title) { font-size: 36px; }
+  }
+  @media (max-width: $bp-mobile) and (max-height: 600px) {
+    gap: 10px;
+    &__lead { font-size: 15px; line-height: 1.35; }
+    &__mirci { min-height: 90px; }
   }
 }
 </style>
