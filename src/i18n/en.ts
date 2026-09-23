@@ -8,6 +8,8 @@ export const en: Messages = {
   introSpeech: 'Pet her head. Better leave her nose, ears and tail alone.',
   start: "Let's go",
   again: 'One more round',
+  home: 'Home',
+  languageName: 'English',
   clear: 'Eraser',
   giveUp: 'Give up',
   nextRound: 'Next round',
@@ -126,6 +128,7 @@ export const en: Messages = {
   catWords: { hmpf: 'hmph', hiss: 'hiss', hissLoud: 'hiss!', yum: 'yum', hehe: 'hehe', bleh: 'blehh', purr: 'prr' },
   a11y: {
     cat: 'Mirci the cat',
+    language: 'Language',
     board: 'Drawing board',
     timeLeft: 'Time left',
     confidence: "Mirci's confidence",

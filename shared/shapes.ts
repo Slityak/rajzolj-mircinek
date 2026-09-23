@@ -214,6 +214,8 @@ const elongWord = (e: number) => (e < 1.25 ? 'round' : e < 2 ? 'slightly elongat
 function classify(pts: Pt[], closed: boolean, span: number): Pick<Shape, 'kind' | 'dir'> {
   const box = bbox(pts), size = Math.max(box.w, box.h)
   if (size < .05 * span || len(pts) < 8) return { kind: 'dot' }
+  // Too small to dissect reliably (eyes, buttons, toppings): hand wobble would dominate the shape.
+  if (closed && size < .12 * span) return { kind: 'small round loop' }
   const step = Math.max(size / 48, 1)
   const rs = resample(pts, step)
   const ring = closed ? rs.slice(0, -1) : rs
@@ -311,7 +313,8 @@ function classify(pts: Pt[], closed: boolean, span: number): Pick<Shape, 'kind' 
     const dx = q.x - P.mx, dy = q.y - P.my, u = dx * P.ux + dy * P.uy, v = -dx * P.uy + dy * P.ux
     return s + Math.abs(hyp(u / a, v / b) - 1)
   }, 0) / sm.length
-  if (res < .1 && notches.length === 0 && convex.length <= 2) {
+  // Small circles wobble relatively more, so they get a looser fit.
+  if (res < (size < .35 * span ? .16 : .1) && notches.length === 0 && convex.length <= 2) {
     if (convex.length === 2 && elong > 1.4) return { kind: `pointed oval (lens or leaf shape), ${orient(P.ux, P.uy)}, ${elongWord(elong)}` }
     return { kind: elong < 1.2 ? 'circle' : `ellipse, ${orient(P.ux, P.uy)}, ${elongWord(elong)}` }
   }
@@ -409,6 +412,11 @@ function splitLoop(p: Pt[], span: number): Pt[][] {
 }
 
 const sizeWord = (s: number, span: number) => { const r = s / span; return r < .12 ? 'tiny' : r < .3 ? 'small' : r < .6 ? 'medium' : 'large' }
+/** Like sideOf, but names diagonals too (ears sit top-left and top-right of a head, not "left" and "top"). */
+const side8 = (dx: number, dy: number) => {
+  const r = Math.abs(dx) / Math.max(Math.abs(dy), 1e-6)
+  return r > .5 && r < 2 ? `${dy > 0 ? 'bottom' : 'top'}-${dx > 0 ? 'right' : 'left'}` : sideOf(dx, dy)
+}
 const sideOf = (dx: number, dy: number) => (Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'bottom' : 'top'))
 
 /** One line of the description: a shape, or a group of repeated ones (rays). */
@@ -461,7 +469,7 @@ export function analyzeShapes(strokes: readonly number[][], times?: readonly num
   const endName = (j: Shape, q: Pt) => {
     const dx = q.x - j.cx, dy = q.y - j.cy, t = (dx * j.ux + dy * j.uy) / j.half
     if (j.elong >= 1.6 && Math.abs(t) > .55) return `the ${sideOf(j.ux * Math.sign(t), j.uy * Math.sign(t))} end of`
-    return `the ${sideOf(dx, dy)} side of`
+    return `the ${j.elong < 1.6 ? side8(dx, dy) : sideOf(dx, dy)} side of`
   }
 
   // Relations, each shape against the others (the biggest relevant one wins).

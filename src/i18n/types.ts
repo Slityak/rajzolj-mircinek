@@ -16,6 +16,10 @@ export interface Messages {
   introSpeech: string
   start: string
   again: string
+  /** Back to the start screen. */
+  home: string
+  /** This language's own name, shown in the language switch ("Magyar", "English"). */
+  languageName: string
   clear: string
   giveUp: string
   nextRound: string
@@ -55,6 +59,7 @@ export interface Messages {
   /** Screen-reader-only labels. */
   a11y: {
     cat: string
+    language: string
     board: string
     timeLeft: string
     confidence: string

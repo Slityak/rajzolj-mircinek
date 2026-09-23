@@ -1,8 +1,8 @@
-import { computed, onBeforeUnmount, reactive, type InjectionKey } from 'vue'
+import { computed, onBeforeUnmount, reactive, watch, type InjectionKey } from 'vue'
 import type { Mood, CatGesture } from '@/cat'
 import { SUBJECTS, TASK_KEYS, type SubjectKey, type TaskKey } from '@shared/subjects'
 import { isAccepted, type JudgeMode, type JudgeResponse } from '@shared/judge'
-import { t, pick } from '@/i18n'
+import { locale, t, pick } from '@/i18n'
 import { judgeDrawing } from './judge'
 import { REACTION_MOODS, isReactionKey } from './reactions'
 import type { Overlay, RoundOutcome, RoundResult, Screen, Stroke } from './types'
@@ -204,6 +204,14 @@ export function useGame(opts: GameOptions = {}) {
 
   const giveUp = () => endRound('giveup')
 
+  /** Back to the start screen (from the final screen). */
+  function home() {
+    Object.assign(state, { screen: 'intro', mood: 'idle', speech: t.value.introSpeech })
+  }
+
+  // The start screen's bubble follows a language switch; in-game lines just continue in the new language.
+  watch(locale, () => { if (state.screen === 'intro') state.speech = t.value.introSpeech })
+
   function onGesture(g: CatGesture) {
     if (state.overlay && g !== 'pet') return
     holdSpeech = performance.now() + 2000
@@ -237,7 +245,7 @@ export function useGame(opts: GameOptions = {}) {
 
   return {
     state, subject, view, rounds: ROUNDS, roundSeconds: SECS,
-    start, next, giveUp, cleared, onGesture, setStrokes, strokeEnded
+    start, next, giveUp, home, cleared, onGesture, setStrokes, strokeEnded
   }
 }
 

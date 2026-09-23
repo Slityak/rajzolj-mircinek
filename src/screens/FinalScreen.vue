@@ -23,7 +23,10 @@ const game = inject(GAME_KEY)!
       </li>
     </ul>
     <SpeechBubble class="final__bubble" :text="game.state.speech" />
-    <BaseButton size="lg" class="final__cta" @click="game.start">{{ t.again }}</BaseButton>
+    <div class="final__actions">
+      <BaseButton size="lg" variant="secondary" @click="game.home">{{ t.home }}</BaseButton>
+      <BaseButton size="lg" @click="game.start">{{ t.again }}</BaseButton>
+    </div>
   </section>
 </template>
 
@@ -48,6 +51,7 @@ const game = inject(GAME_KEY)!
   &__score { font-size: 22px; font-weight: $fw-bold; color: var(--c-ink-soft); }
   &__results { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: space(2); }
   &__bubble { width: 100%; max-width: 400px; margin-top: 6px; text-align: left; }
+  &__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: space(3); }
 
   @include mobile {
     min-height: auto; // the shell is viewport-high and flex: 1 stretches us; taller content scrolls
@@ -58,7 +62,8 @@ const game = inject(GAME_KEY)!
     &__title { font-size: 36px; }
     &__score { font-size: 20px; }
     &__bubble { max-width: none; margin-top: 0; }
-    &__cta { width: 100%; margin-top: auto; }
+    // Two buttons side by side at thumb height, like Eraser / Give up in the game.
+    &__actions { width: 100%; margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; }
   }
 }
 </style>

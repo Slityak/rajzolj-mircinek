@@ -8,6 +8,8 @@ export const hu: Messages = {
   introSpeech: 'Simogasd meg a fejét. Az orrát, a fülét és a farkát inkább ne piszkáld.',
   start: 'Kezdjük',
   again: 'Még egy menet',
+  home: 'Főoldal',
+  languageName: 'Magyar',
   clear: 'Radír',
   giveUp: 'Feladom',
   nextRound: 'Következő kör',
@@ -126,6 +128,7 @@ export const hu: Messages = {
   catWords: { hmpf: 'hmpf', hiss: 'hssz', hissLoud: 'hssz!', yum: 'nyam', hehe: 'hehe', bleh: 'blehh', purr: 'prr' },
   a11y: {
     cat: 'Mirci, a macska',
+    language: 'Nyelv',
     board: 'Rajzlap',
     timeLeft: 'Hátralévő idő',
     confidence: 'Mirci magabiztossága',

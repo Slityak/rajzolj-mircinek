@@ -17,7 +17,7 @@ export const SUBJECTS = {
   tree: { emoji: '🌳', describe: 'a round, bumpy or cloud-like shape or line on top (crown) with two roughly vertical lines or arcs, or a narrow rectangle, attached below it (trunk)' },
   moon: { emoji: '🌙', describe: 'a crescent: a round shape with a deep bite out of one side, or a deep C-shaped arc' },
   star: { emoji: '⭐', describe: 'a star with 5 sharp points, or a closed zigzag outline with 5 spikes' },
-  mouse: { emoji: '🐭', describe: 'an ellipse or pointed oval body with small circles attached on top (ears) and a long curved or wavy line attached to one end (tail)' },
+  mouse: { emoji: '🐭', describe: 'a round head with two large round ears (circles) attached on its top-left and top-right; or an ellipse or pointed oval body with a round ear on top and a long thin curved or wavy line attached to one end (tail)' },
   heart: { emoji: '❤️', describe: 'a heart-like outline: a dip at the top center, two round bumps and a point at the bottom' },
 
   // Guess only

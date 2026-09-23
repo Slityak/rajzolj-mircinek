@@ -4,6 +4,7 @@ import { MirciCat, type Mood } from '@/cat'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import SpeechBubble from '@/components/ui/SpeechBubble.vue'
 import GameTitle from '@/components/ui/GameTitle.vue'
+import LanguageSwitch from '@/components/ui/LanguageSwitch.vue'
 import { GAME_KEY } from '@/game/useGame'
 import { t } from '@/i18n'
 
@@ -13,6 +14,7 @@ const game = inject(GAME_KEY)!
 
 <template>
   <section class="intro" data-screen="intro">
+    <LanguageSwitch class="intro__lang" />
     <div class="intro__copy">
       <GameTitle :lines="t.title" />
       <p class="intro__lead">{{ t.intro }}</p>
@@ -30,6 +32,7 @@ const game = inject(GAME_KEY)!
 @use '@/styles/mixins' as *;
 
 .intro {
+  position: relative;
   min-height: 100vh;
   max-width: $desktop-max;
   margin: 0 auto;
@@ -44,6 +47,7 @@ const game = inject(GAME_KEY)!
   &__cat { flex: 1 1 340px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
   &__mirci { width: 320px; max-width: 100%; height: 340px; }
   &__bubble { width: 320px; max-width: 100%; }
+  &__lang { position: absolute; top: space(6); right: space(8); }
 
   // Mobile: title → cat → bubble → lead → CTA at the bottom
   @include mobile {
@@ -55,6 +59,7 @@ const game = inject(GAME_KEY)!
     gap: 14px;
 
     &__copy, &__cat { display: contents; }
+    &__lang { position: static; order: 0; align-self: flex-end; }
     :deep(.title) { order: 1; }
     &__mirci { order: 2; width: 100%; height: 280px; }
     &__bubble { order: 3; width: 100%; }
